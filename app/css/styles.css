@@ -390,16 +390,22 @@ nav h1 a:nth-of-type(even) {
   float: left;
 }
 
-#reviews-list li p:nth-of-type(2) {
+#reviews-list li p.createdAt {
   float: right;
-  font-weight: bold;
+  /* color: #d85b5b; */
+  /* color: green; */
+  /* font-weight: bold; */
 }
-
-#reviews-list li p:nth-of-type(3) {
+#reviews-list li p.updatedAt {
+  float: right;
+  color: #008800;
+}
+#reviews-list li p.rating {
+  float: left;
+}
+#reviews-list li p.comments {
   clear: both;
-  color: #f18200;
 }
-
 #reviews-list li p:nth-of-type(3)[data-rating="3"] {
   color: #f18200;
 }

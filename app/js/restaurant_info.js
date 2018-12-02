@@ -124,7 +124,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  DBHelper.fetchRestaurantReviewsById(restaurant.id, fillReviewsHTML);
 }
 
 /**
@@ -150,7 +150,11 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (error, reviews) => {
+  self.restaurant.reviews = reviews;
+   if (error) {
+    console.log('Error retrieving reviews', error);
+  }
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   const reviewsIcon ='<i class="fa fa-address-card"></i>';    // added font awesoem icons
@@ -180,14 +184,26 @@ createReviewHTML = (review) => {
   name.innerHTML = reviewName + review.name;
   li.appendChild(name);
 
-  const date = document.createElement('p');
-  const calenderIcon ='<i class="fa fa-calendar-o"></i>';
-  date.innerHTML =  calenderIcon + review.date;
-  li.appendChild(date);
+  
+   const createdAt = document.createElement('p');
+  createdAt.classList.add('createdAt');
+  const createdDate = new Date(review.createdAt).toLocaleDateString();
+  createdAt.innerHTML = `Added:<strong>${createdDate}</strong>`;
+  li.appendChild(createdAt);
+
+  // if (review.updatedAt > review.createdAt) {
+    
+  const updatedAt = document.createElement('p');
+  const updatedDate = new Date(review.updatedAt).toLocaleDateString();
+  updatedAt.innerHTML = `Updated:<strong>${updatedDate}</strong>`;
+  updatedAt.classList.add('updatedAt');
+  li.appendChild(updatedAt);
+  // }
   
   var ratingValue =review.rating;
   let ratingIcon ='';
   const rating = document.createElement('p');
+  rating.classList.add('rating');
   // dynamically generating of  rating star icons
   for (var j = 1; j <= 5; j++) {
     ratingIcon = ratingIcon +'<i class="fa fa-star' + ((j <= ratingValue) ? '' : ((j < ratingValue + 1) ? '-half-o' : '-o')) + '" aria-hidden="true"></i>';
@@ -197,6 +213,7 @@ createReviewHTML = (review) => {
   li.appendChild(rating);
 
   const comments = document.createElement('p');
+  comments.classList.add('comments');
   comments.innerHTML = review.comments;
   li.appendChild(comments);
 

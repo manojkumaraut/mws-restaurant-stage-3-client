@@ -38,6 +38,32 @@ initMap = () => {
   });
 }  
  
+ window.addEventListener('load', function () {
+  const isOffline = getParameterByName('isOffline');
+
+  if (isOffline) {
+    document.querySelector('#offline').setAttribute('aria-hidden', false);
+    document.querySelector('#offline').classList.add('show');
+      
+    wait(8000).then(() => {
+      document.querySelector('#offline').setAttribute('aria-hidden', true);
+      document.querySelector('#offline').classList.remove('show');
+    });
+  }
+
+  // processQueue()
+});
+
+const wait = function (ms) {
+  return new Promise(function (resolve, reject) {
+    window.setTimeout(function () {
+      resolve(ms);
+      reject(ms);
+    }, ms);
+  });
+};
+
+ 
 /* window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
@@ -161,6 +187,8 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   }
 }
 
+
+
 const openModal = () => {
   // Save current focus
   focusedElementBeforeModal = document.activeElement;
@@ -178,10 +206,9 @@ const openModal = () => {
   // const submitReviewBtn = modal.querySelector('#submit-review-btn');
   // submitReviewBtn.addEventListener('click', processAddReview);
 
-  // submit form
-  const form = document.getElementById('review-form');
-  form.addEventListener('submit', submitAddReview, false);
-
+   // submit form
+  const form = document.getElementById('review_form');
+  form.addEventListener('submit', saveAddReview, false);
   // Find all focusable children
   var focusableElementsString = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]';
   var focusableElements = modal.querySelectorAll(focusableElementsString);
@@ -198,7 +225,9 @@ const openModal = () => {
   // Focus first child
   // firstTabStop.focus();
   const reviewName = document.getElementById('reviewName');
-  reviewName.focus();
+   setTimeout(() => {
+    reviewName.focus();
+  }, 200);
 
   function trapTabKey(e) {
     // Check for TAB key press
@@ -238,7 +267,33 @@ const submitAddReview = (e) => {
   e.preventDefault();
   closeModal();
 };
+const saveAddReview = (e) => {
+  e.preventDefault();
+  const form = e.target;
+ 
+  if (form.checkValidity()) {
+    console.log('is valid');
 
+    const restaurant_id = self.restaurant.id;
+    const name = document.querySelector('#reviewName').value;
+    const rating = document.querySelector('input[name=rate]:checked').value;
+    const comments = document.querySelector('#reviewComments').value;
+  
+    // attempt save to database server
+    DBHelper.createRestaurantReview(restaurant_id, name, rating, comments, (error, review) => {
+      console.log('got callback');
+      form.reset();
+      if (error) {
+        console.log('We are offline. Review has been saved to the queue.');
+        window.location.href = `/restaurant.html?id=${self.restaurant.id}&isOffline=true`;
+      } else {
+        console.log('Received updated record from DB Server', review);
+        DBHelper.createIDBReview(review); // write record to local IDB store
+        window.location.href = `/restaurant.html?id=${self.restaurant.id}`;
+      }
+    });
+  }
+};
 const closeModal = () => {
   // Hide the modal and overlay
   // modal.style.display = 'none';
@@ -252,23 +307,6 @@ const closeModal = () => {
   focusedElementBeforeModal.focus();
 };
 
-// not used anymore
-const toggleModal = (evt) => {
-  evt.preventDefault();
-  const modal = document.getElementById('modal');
-  // modal.
-  if (!modal.classList.contains('show')) {
-    // show form
-    buildReviewForm();
-    const reviewName = document.getElementById('reviewName');
-    modal.classList.toggle('show');
-    reviewName.focus();
-  } else {
-    const addReviewBtn = document.getElementById('review-add-btn');
-    modal.classList.toggle('show');
-    addReviewBtn.focus();
-  }
-};
 
 const buildReviewForm = () => {
 
@@ -367,7 +405,7 @@ const fillReviewsHTML = (error, reviews) => {
  const header = document.getElementById('reviews-header');
   const addReview = document.createElement('button');
   addReview.id = 'review-add-btn';
-  addReview.innerHTML = '+';
+  addReview.innerHTML = 'Add Review';
   addReview.setAttribute('aria-label', 'add review');
   addReview.title = 'Add Review';
   addReview.addEventListener('click', openModal);
@@ -405,14 +443,18 @@ createReviewHTML = (review) => {
   
    const createdAt = document.createElement('p');
   createdAt.classList.add('createdAt');
-  const createdDate = new Date(review.createdAt).toLocaleDateString();
+ const createdDate = review.createdAt ?
+    new Date(review.createdAt).toLocaleDateString() :
+    'Pending';
   createdAt.innerHTML = `Added:<strong>${createdDate}</strong>`;
   li.appendChild(createdAt);
 
   // if (review.updatedAt > review.createdAt) {
     
   const updatedAt = document.createElement('p');
-  const updatedDate = new Date(review.updatedAt).toLocaleDateString();
+  const updatedDate = review.updatedAt ?
+    new Date(review.updatedAt).toLocaleDateString() :
+    'Pending';
   updatedAt.innerHTML = `Updated:<strong>${updatedDate}</strong>`;
   updatedAt.classList.add('updatedAt');
   li.appendChild(updatedAt);

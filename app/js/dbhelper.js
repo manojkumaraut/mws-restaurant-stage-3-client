@@ -32,12 +32,65 @@ class DBHelper {  // eslint-disable-line no-unused-vars
       });
   }
 
-  static addRequestToQueue(url, headers, method, data, review_key) {
+  
+  // POST
+  // http://localhost:1337/reviews/
+  static createRestaurantReview(restaurant_id, name, rating, comments, callback) {
+    const url = DBHelper.DATABASE_URL + '/reviews/';
+    const method = 'POST';
+    const data = {
+      restaurant_id: restaurant_id,
+      name: name,
+      rating: rating,
+      comments: comments
+    };
+    const body = JSON.stringify(data);
+    // const body = data;
+    
+    fetch(url, {
+      headers: { 'Content-Type': 'application/form-data' },
+      method: method,
+      body: body
+    })
+      .then(response => response.json())
+      .then(data => callback(null, data))
+      .catch(err => {
+        // We are offline...
+        // Save review to local IDB, set id to -1
+        data.id = -1;
+        DBHelper.createIDBReview(data)
+          .then(review_key => {
+            // Get review_key and save it with review to offline queue
+            console.log('returned review_key', review_key);
+            DBHelper.addRequestToQueue(url, method, body, review_key)
+              .then(offline_key => console.log('returned offline_key', offline_key));
+          });
+        callback(err, null);
+      });
+  }
+   static createIDBReview(review) {
+  // static createIDBRestaurantReview(restaurant_id, name, rating, comments) {
+  // const review = {
+  //     id: -1,
+  //     restaurant_id: restaurant_id,
+  //     name: name,
+  //     rating: +rating,
+  //     comments: comments,
+  //     createdAt: Date.now(),
+  //     updatedAt: Date.now()
+  //   };
+    return idbKeyVal.setReturnId('reviews', review)
+      .then(id => {
+        console.log('Saved to IDB: reviews', review);
+        return id;
+      });
+  }
+
+  static addRequestToQueue(url, method, body, review_key) {
     const request = {
       url: url,
-      headers: headers,
       method: method,
-      data: data,
+      body: body,
       review_key: review_key
     };
     return idbKeyVal.setReturnId('offline', request)
@@ -48,20 +101,21 @@ class DBHelper {  // eslint-disable-line no-unused-vars
   }
 
 
+  // PUT
   // http://localhost:1337/restaurants/<restaurant_id>/?is_favorite=true
   static markFavorite(id) {
     fetch(`${DBHelper.DATABASE_URL}/restaurants/${id}/?is_favorite=true`, {
       method: 'PUT'
     }).catch(err => console.log(err));
+  }
 
-  }
-   // http://localhost:1337/restaurants/<restaurant_id>/?is_favorite=false
+  // PUT
+  // http://localhost:1337/restaurants/<restaurant_id>/?is_favorite=false
   static unMarkFavorite(id) {
-   fetch(`${DBHelper.DATABASE_URL}/restaurants/${id}/?is_favorite=false`, {
+    fetch(`${DBHelper.DATABASE_URL}/restaurants/${id}/?is_favorite=false`, {
       method: 'PUT'
-      }).catch(err => console.log(err));
+    }).catch(err => console.log(err));
   }
-  
   
   // http://localhost:1337/reviews/?restaurant_id=<restaurant_id>
   static fetchRestaurantReviewsById(id, callback) {

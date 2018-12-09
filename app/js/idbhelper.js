@@ -1,7 +1,6 @@
-const idb = window.indexedDB;
-/**
- * Common database helper functions.
- */
+import idb from 'idb';
+// let idb = require('idb');
+
 const dbPromise = idb.open('udacity-restaurant-db', 3, upgradeDB => {
   switch (upgradeDB.oldVersion) {
     case 0:
@@ -13,26 +12,26 @@ const dbPromise = idb.open('udacity-restaurant-db', 3, upgradeDB => {
       upgradeDB.createObjectStore('offline', { autoIncrement: true });
   }
 });
-self.dbPromise = dbPromise;
 
-
-const idbKeyVal  ={
-	get(store, key) {
+// IndexedDB object with get, set, getAll, & getAllIdx methods
+// https://github.com/jakearchibald/idb
+const idbKeyVal = {
+  get(store, key) {
     return dbPromise.then(db => {
       return db
         .transaction(store)
         .objectStore(store)
         .get(key);
     });
-	},
-	getAll(store) {
+  },
+  getAll(store) {
     return dbPromise.then(db => {
       return db
         .transaction(store)
         .objectStore(store)
         .getAll();
     });
-	},
+  },
   getAllIdx(store, idx, key) {
     return dbPromise.then(db => {
       return db
@@ -42,36 +41,22 @@ const idbKeyVal  ={
         .getAll(key);
     });
   },
-   set(store, val) {
+  set(store, val) {
     return dbPromise.then(db => {
       const tx = db.transaction(store, 'readwrite');
       tx.objectStore(store).put(val);
       return tx.complete;
     });
-  },setReturnId(store, val) {
-    return dbPromise.then(db => {
-      const tx = db.transaction(store, 'readwrite');
-      const pk = tx
-        .objectStore(store)
-        .put(val);
-      tx.complete;
-      return pk;
-    });
   },
-  delete(store, key) {
-    return dbPromise.then(db => {
-      const tx = db.transaction(store, 'readwrite');
-      tx.objectStore(store).delete(key);
-      return tx.complete;
-    });
-  },
-  openCursor(store) {
+  setReturnId(store, val) {
     return dbPromise.then(db => {
       return db.transaction(store, 'readwrite')
-        .objectStore(store)
-        .openCursor();
+        .objectStore(store).put(val);
+      // return tx.complete;
     });
   }
+ 
 };
+
+// CL.log('my class from outside');
 self.idbKeyVal = idbKeyVal;
-	

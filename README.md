@@ -1,9 +1,16 @@
 
-# Restaurant Reviews App - Stage 1 - Modified version
+# Restaurant Reviews App - Stage 3 - Modified version
 
 - Download the repository
 - Use npm install command
 - run the command - "http-server"
+
+Features Covered:
+- Add Favorite control for restaurant
+- Display reviews on details page
+- Add Review Form modal popup in page and manage in offline
+
+
 
 
 **Screenshot 1**

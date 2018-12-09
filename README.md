@@ -3,7 +3,7 @@
 
 - Download the repository
 - Use npm install command
-- run the command - "http-server"
+- run the command - "gulp serve"
 
 Features Covered:
 - Add Favorite control for restaurant

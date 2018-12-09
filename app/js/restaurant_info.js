@@ -97,6 +97,36 @@ fetchRestaurantFromURL = (callback) => {
   }
 }
 
+
+const favoriteClickHandler = (evt, fav, restaurant) => {
+  evt.preventDefault();
+  const is_favorite = JSON.parse(restaurant.is_favorite); // set to boolean
+
+  DBHelper.toggleFavorite(restaurant, (error, restaurant) => {
+    console.log('got callback');
+    if (error) {
+      console.log('We are offline. Review has been saved to the queue.');
+      showOffline();
+    } else {
+      console.log('Received updated record from DB Server', restaurant);
+      DBHelper.updateIDBRestaurant(restaurant); // write record to local IDB store
+    }
+  });
+
+  // set ARIA, text, & labels
+  if (is_favorite) {
+    fav.setAttribute('aria-pressed', 'false');
+    fav.innerHTML = `Add ${restaurant.name} as a favorite`;
+    fav.title = `Add ${restaurant.name} as a favorite`;
+  } else {
+    fav.setAttribute('aria-pressed', 'true');
+    fav.innerHTML = `Remove ${restaurant.name} as a favorite`;
+    fav.title = `Remove ${restaurant.name} as a favorite`;
+  }
+  fav.classList.toggle('active');
+};
+self.favoriteClickHandler = favoriteClickHandler;
+
 /**
  * Create restaurant HTML and add it to the webpage and added responsive images rendering
  */
@@ -109,32 +139,25 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const addressIcon ='<i class="fa fa-map-marker"></i>';
   address.innerHTML = addressIcon + restaurant.address;
   
-   const favorite = document.getElementById('restaurant-fav');
-  if (restaurant.is_favorite === 'true') {
+
+  const favorite = document.getElementById('restaurant-fav');
+  // RegEx method tests if is_favorite is true or "true" and returns true
+  // https://codippa.com/how-to-convert-string-to-boolean-javascript/
+  if ((/true/i).test(restaurant.is_favorite)) {
     favorite.classList.add('active');
     favorite.setAttribute('aria-pressed', 'true');
-	//favorite.innerHTML = `Remove ${restaurant.name} as a favorite`;
+    favorite.innerHTML = `Remove ${restaurant.name} as a favorite`;
     favorite.title = `Remove ${restaurant.name} as a favorite`;
   } else {
     favorite.setAttribute('aria-pressed', 'false');
-    //favorite.innerHTML = `Add ${restaurant.name} as a favorite`;
+    favorite.innerHTML = `Add ${restaurant.name} as a favorite`;
     favorite.title = `Add ${restaurant.name} as a favorite`;
   }
+  
   favorite.addEventListener('click', (evt) => {
-    evt.preventDefault();
-    if (favorite.classList.contains('active')) {
-      favorite.setAttribute('aria-pressed', 'false');
-      //favorite.innerHTML = `Add ${restaurant.name} as a favorite`;
-      favorite.title = `Add ${restaurant.name} as a favorite`;
-      DBHelper.unMarkFavorite(restaurant.id);
-    } else {
-      favorite.setAttribute('aria-pressed', 'true');
-      //favorite.innerHTML = `Remove ${restaurant.name} as a favorite`;
-      favorite.title = `Remove ${restaurant.name} as a favorite`;
-      DBHelper.markFavorite(restaurant.id);
-    }
-    favorite.classList.toggle('active');
-	});
+    favoriteClickHandler(evt, favorite, restaurant);
+  }, false);
+  
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);

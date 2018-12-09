@@ -189,42 +189,64 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
   addMarkersToMap();
 }
 
+
+
+const favoriteClickHandler = (evt, fav, restaurant) => {
+  evt.preventDefault();
+  const is_favorite = JSON.parse(restaurant.is_favorite); // set to boolean
+
+  DBHelper.toggleFavorite(restaurant, (error, restaurant) => {
+    console.log('got callback');
+    if (error) {
+      console.log('We are offline. Review has been saved to the queue.');
+      showOffline();
+    } else {
+      console.log('Received updated record from DB Server', restaurant);
+      DBHelper.updateIDBRestaurant(restaurant); // write record to local IDB store
+    }
+  });
+
+  // set ARIA, text, & labels
+  if (is_favorite) {
+    fav.setAttribute('aria-pressed', 'false');
+    fav.innerHTML = `Add ${restaurant.name} as a favorite`;
+    fav.title = `Add ${restaurant.name} as a favorite`;
+  } else {
+    fav.setAttribute('aria-pressed', 'true');
+    fav.innerHTML = `Remove ${restaurant.name} as a favorite`;
+    fav.title = `Remove ${restaurant.name} as a favorite`;
+  }
+  fav.classList.toggle('active');
+};
+self.favoriteClickHandler = favoriteClickHandler;
+
 /**
  * Create restaurant HTML with srcset and font awesome Icons .
  */
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
   
- const fav = document.createElement('button');
+  const fav = document.createElement('button');
   fav.className = 'fav-control';
   fav.setAttribute('aria-label', 'favorite');
-  // fav.setAttribute('role', 'button');
-  if (restaurant.is_favorite === 'true') {
+  
+  // RegEx method tests if is_favorite is true or "true" and returns true
+  // https://codippa.com/how-to-convert-string-to-boolean-javascript/
+  if ((/true/i).test(restaurant.is_favorite)) {
     fav.classList.add('active');
     fav.setAttribute('aria-pressed', 'true');
-    //fav.innerHTML = `Remove ${restaurant.name} as a favorite`;
     fav.title = `Remove ${restaurant.name} as a favorite`;
   } else {
     fav.setAttribute('aria-pressed', 'false');
-    //fav.innerHTML = `Add ${restaurant.name} as a favorite`;
     fav.title = `Add ${restaurant.name} as a favorite`;
   }
+
   fav.addEventListener('click', (evt) => {
-    evt.preventDefault();
-    if (fav.classList.contains('active')) {
-      fav.setAttribute('aria-pressed', 'false');
-      //fav.innerHTML = `Add ${restaurant.name} as a favorite`;
-      fav.title = `Add ${restaurant.name} as a favorite`;
-      DBHelper.unMarkFavorite(restaurant.id);
-    } else {
-      fav.setAttribute('aria-pressed', 'true');
-      //fav.innerHTML = `Remove ${restaurant.name} as a favorite`;
-      fav.title = `Remove ${restaurant.name} as a favorite`;
-      DBHelper.markFavorite(restaurant.id);
-    }
-    fav.classList.toggle('active');
-  });
+    favoriteClickHandler(evt, fav, restaurant);
+  }, false);
+
   li.append(fav);
+
   
   
   

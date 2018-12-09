@@ -12,32 +12,7 @@ const dbPromise = idb.open('udacity-restaurant-db', 3, upgradeDB => {
       upgradeDB.createObjectStore('offline', { autoIncrement: true });
   }
 });
-
 self.dbPromise = dbPromise;
-
-
-const showOffline = () => {
-  document.querySelector('#offline').setAttribute('aria-hidden', false);
-  document.querySelector('#offline').classList.add('show');
-    
-  wait(8000).then(() => {
-    document.querySelector('#offline').setAttribute('aria-hidden', true);
-    document.querySelector('#offline').classList.remove('show');
-  });
-};
-
-self.showOffline = showOffline;
-
-const wait = function (ms) {
-  return new Promise(function (resolve, reject) {
-    window.setTimeout(function () {
-      resolve(ms);
-      reject(ms);
-    }, ms);
-  });
-};
-
-self.wait = wait;
 
 // IndexedDB object with get, set, getAll, & getAllIdx methods
 // https://github.com/jakearchibald/idb
@@ -98,6 +73,32 @@ const idbKeyVal = {
         .openCursor();
     });
   }
-
 };
 self.idbKeyVal = idbKeyVal;
+
+// test...
+// CL.log('my class from outside');
+
+// Shared code goes here since this file get included on all pages...
+// Shared methods below...
+const wait = function (ms) {
+  return new Promise(function (resolve, reject) {
+    window.setTimeout(function () {
+      resolve(ms);
+      reject(ms);
+    }, ms);
+  });
+};
+self.wait = wait;
+
+const showOffline = () => {
+  document.querySelector('#offline').setAttribute('aria-hidden', false);
+  document.querySelector('#offline').classList.add('show');
+    
+  wait(8000).then(() => {
+    document.querySelector('#offline').setAttribute('aria-hidden', true);
+    document.querySelector('#offline').classList.remove('show');
+  });
+};
+self.showOffline = showOffline;
+

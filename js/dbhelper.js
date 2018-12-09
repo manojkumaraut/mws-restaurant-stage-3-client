@@ -32,6 +32,23 @@ class DBHelper {  // eslint-disable-line no-unused-vars
       });
   }
 
+  
+   static createRestaurantReview(id, name, rating, comments, callback) {
+    const data = {
+      'restaurant_id': id,
+      'name': name,
+      'rating': rating,
+      'comments': comments
+    };
+    fetch(DBHelper.DATABASE_URL + '/reviews/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+      .then(response => response.json())
+      .then(data => callback(null, data))
+      .catch(err => callback(err, null));
+  }
+  
   static addRequestToQueue(url, headers, method, data, review_key) {
     const request = {
       url: url,
@@ -50,14 +67,14 @@ class DBHelper {  // eslint-disable-line no-unused-vars
 
   // http://localhost:1337/restaurants/<restaurant_id>/?is_favorite=true
   static markFavorite(id) {
-   fetch(DBHelper.DATABASE_URL + '/restaurants' + id + '/?is_favorite=true', {
+    fetch(`${DBHelper.DATABASE_URL}/restaurants/${id}/?is_favorite=true`, {
       method: 'PUT'
     }).catch(err => console.log(err));
 
   }
    // http://localhost:1337/restaurants/<restaurant_id>/?is_favorite=false
   static unMarkFavorite(id) {
-   fetch(DBHelper.DATABASE_URL + '/restaurants' + id + '/?is_favorite=false', {
+   fetch(`${DBHelper.DATABASE_URL}/restaurants/${id}/?is_favorite=false`, {
       method: 'PUT'
       }).catch(err => console.log(err));
   }

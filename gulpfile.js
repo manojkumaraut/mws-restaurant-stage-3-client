@@ -213,21 +213,7 @@ gulp.task('clean:dist', function () {
   return del(['dist/**/*']); // del files rather than dirs to avoid error
 });
 
-// Watch files for changes & reload
-gulp.task('serve', function () {
-  runSequence(['clean'], ['html', 'sw', 'dbhelper', 'manifest'], function() {
-    browserSync.init({
-      server: '.tmp',
-      port: 8001
-    });
 
-    gulp.watch(['app/css/*.css'], ['html', reload]);
-    gulp.watch(['app/js/*.js', '!app/js/dbhelper.js', '!app/js/idbhelper.js'], ['lint', 'html', reload]);
-    gulp.watch(['app/sw.js', 'app/js/idbhelper.js'], ['lint', 'sw', reload]);
-    gulp.watch(['app/js/dbhelper.js', 'app/js/idbhelper.js'], ['lint', 'dbhelper', reload]);
-    gulp.watch(['app/manifest.json'], ['manifest', reload]);
-  });
-});
 
 // Build dev files
 gulp.task('build', function (done) {
@@ -235,7 +221,7 @@ gulp.task('build', function (done) {
 });
 
 // Build and serve the fully optimized site
-gulp.task('serve:dist', ['default'], function () {
+gulp.task('serve', ['default'], function () {
   browserSync.init({
     server: 'app',
     port: 8000

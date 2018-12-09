@@ -38,7 +38,7 @@ initMap = () => {
   });
 }  
  
- window.addEventListener('load', function () {
+window.addEventListener('load', function () {
   const isOffline = getParameterByName('isOffline');
 
   if (isOffline) {
@@ -51,17 +51,9 @@ initMap = () => {
     });
   }
 
-  // processQueue()
+  DBHelper.processQueue();
 });
 
-const wait = function (ms) {
-  return new Promise(function (resolve, reject) {
-    window.setTimeout(function () {
-      resolve(ms);
-      reject(ms);
-    }, ms);
-  });
-};
 
  
 /* window.initMap = () => {

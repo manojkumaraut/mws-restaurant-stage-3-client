@@ -57,10 +57,7 @@ self.addEventListener('fetch', event => {
    if (request.url.includes('reviews')) {
       let id = +requestUrl.searchParams.get('restaurant_id');
       event.respondWith(idbReviewResponse(request, id));
-    } else {
-      event.respondWith(idbRestaurantResponse(request));
-    }
-  
+    }   
   else {
     event.respondWith(cacheResponse(request));
   }

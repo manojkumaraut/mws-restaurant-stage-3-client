@@ -16,6 +16,18 @@ const dbPromise = idb.open('udacity-restaurant-db', 3, upgradeDB => {
 self.dbPromise = dbPromise;
 
 
+const showOffline = () => {
+  document.querySelector('#offline').setAttribute('aria-hidden', false);
+  document.querySelector('#offline').classList.add('show');
+    
+  wait(8000).then(() => {
+    document.querySelector('#offline').setAttribute('aria-hidden', true);
+    document.querySelector('#offline').classList.remove('show');
+  });
+};
+
+self.showOffline = showOffline;
+
 const wait = function (ms) {
   return new Promise(function (resolve, reject) {
     window.setTimeout(function () {

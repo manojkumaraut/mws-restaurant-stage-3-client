@@ -272,17 +272,26 @@ const saveAddReview = (e) => {
     const comments = document.querySelector('#reviewComments').value;
   
     // attempt save to database server
+   // attempt save to database server
     DBHelper.createRestaurantReview(restaurant_id, name, rating, comments, (error, review) => {
       console.log('got callback');
       form.reset();
       if (error) {
         console.log('We are offline. Review has been saved to the queue.');
-        window.location.href = `/restaurant.html?id=${self.restaurant.id}&isOffline=true`;
+        // window.location.href = `/restaurant.html?id=${self.restaurant.id}&isOffline=true`;
+        showOffline();
       } else {
         console.log('Received updated record from DB Server', review);
         DBHelper.createIDBReview(review); // write record to local IDB store
-        window.location.href = `/restaurant.html?id=${self.restaurant.id}`;
+        // window.location.href = `/restaurant.html?id=${self.restaurant.id}`;
       }
+      idbKeyVal.getAllIdx('reviews', 'restaurant_id', restaurant_id)
+        .then(reviews => {
+          // console.log(reviews);
+          fillReviewsHTML(null, reviews);
+          closeModal();
+          document.getElementById('review-add-btn').focus();
+        });
     });
   }
 };
@@ -395,6 +404,7 @@ const fillReviewsHTML = (error, reviews) => {
     console.log('Error retrieving reviews', error);
   }
  const header = document.getElementById('reviews-header');
+ header.innerHTML = '';
   const addReview = document.createElement('button');
   addReview.id = 'review-add-btn';
   addReview.innerHTML = 'Add Review';
@@ -416,7 +426,8 @@ const fillReviewsHTML = (error, reviews) => {
     return;
   }
   const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
+  ul.innerHTML = '';
+  reviews.reverse();  reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
